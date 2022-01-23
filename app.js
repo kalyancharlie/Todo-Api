@@ -1,4 +1,5 @@
 var createError = require('http-errors');
+const mongoose = require('mongoose')
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -7,9 +8,23 @@ var logger = require('morgan');
 var usersRouter = require('./routes/users');
 var todosRouter = require('./routes/todos');
 
+const MONGO_URI = 'mongodb://localhost/todo_app'
+
 var app = express();
 
 app.use(logger('dev'));
+
+// Mongoose Connection
+mongoose
+    .connect(MONGO_URI, { useNewUrlParser: true})
+    .then()
+    .catch((err) => console.log(err));
+mongoose.connection
+    .once("open", () => {
+        console.log("Connected to DB");
+    })
+    .on("error", (err) => console.warn("MongoDB Connection Error", err));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
