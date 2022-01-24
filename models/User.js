@@ -45,7 +45,6 @@ UserSchema.methods = {
         issuer: ISSUER,
         expiresIn: "50s",
       });
-      console.log("GENERATE ACCESSS TOKEN JWT", accessToken);
       return accessToken;
     } catch (error) {
       return null;
@@ -60,7 +59,6 @@ UserSchema.methods = {
         issuer: ISSUER,
         expiresIn: "15d",
       });
-      console.log("GENERATE REFRESH TOKEN JWT", refreshToken);
       const tokenModel = new Token({ user_id: this._id, token: refreshToken });
       const createdToken = await tokenModel.save();
       if (!createdToken) {

@@ -42,7 +42,6 @@ router.post('/register', [authGuard], async (req, res) => {
 router.get('/user/:user_id', [authGuard, validateIdByParams], async (req, res) => {
   try {
     const user_id = req.params.user_id
-    console.log(user_id)
     const user = await User.findById(user_id, 'email password')
     if (!user) {
       return res.status(404).json({message: 'User not found'})

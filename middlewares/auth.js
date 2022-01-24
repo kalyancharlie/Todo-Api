@@ -54,13 +54,11 @@ module.exports = {
     try {
       // Authenticate
       const { email, password } = req.body;
-      console.log(email, password);
 
       const { user, ...userAuthStatus } = await validateCredentials(
         email,
         password
       );
-      console.log(userAuthStatus, user);
       if (!userAuthStatus.status) {
         return res.status(userAuthStatus.statusCode).json(userAuthStatus);
       }
