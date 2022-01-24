@@ -1,7 +1,12 @@
+const mongoose = require("mongoose")
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const {Todo} = require('../models/Todo')
+const {validateIdByBody} = require('../middlewares/validators')
+
+// Id Validator
+router.use(validateIdByBody)
 
 // Get all Todos
 router.get("/", async (req, res, next) => {
