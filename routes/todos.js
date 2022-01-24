@@ -4,12 +4,17 @@ const router = express.Router();
 const User = require("../models/User");
 const {Todo} = require('../models/Todo')
 const {validateIdByBody} = require('../middlewares/validators')
+const {authGuard} = require("../middlewares/auth")
+
+// Auth Guard
+router.use(authGuard)
 
 // Id Validator
 router.use(validateIdByBody)
 
 // Get all Todos
 router.get("/", async (req, res, next) => {
+  console.log(req.user)
   try {
     const { user_id } = req.body;
     const todos = await User.findById({ _id: user_id }, "todos").populate('todos')
@@ -27,7 +32,7 @@ router.post("/add", async (req, res, next) => {
     const newTodo = new Todo(todo)
     await newTodo.save()
     await User.findByIdAndUpdate({_id: todo.user_id}, {$push: {todos: newTodo._id}})
-    res.status(200).json(newTodo);
+    res.status(201).json(newTodo);
   } catch (error) {
     console.log(error.message);
     res.status(400).json(error);
@@ -40,7 +45,7 @@ router.put("/update", async (req, res, next) => {
     const {...todo } = req.body;
     const newTodo = new Todo(todo)
     await Todo.findByIdAndUpdate({_id: todo._id}, {isCompleted: todo.isCompleted})
-    res.status(200).json(newTodo);
+    res.status(201).json(newTodo);
   } catch (error) {
     console.log(error.message);
     res.status(400).json(error);

@@ -15,17 +15,7 @@ const TodoSchema = new Schema({
     required: true,
     default: false,
   },
-  createdTs: {
-    type: Date,
-    required: false,
-    default: new Date(),
-  },
-  modifiedTs: {
-    type: Date,
-    required: false,
-    default: new Date(),
-  },
-});
+}, {timestamps: true});
 
 const Todo = mongoose.model("todo", TodoSchema);
 
