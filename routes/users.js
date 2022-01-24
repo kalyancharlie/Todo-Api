@@ -17,7 +17,7 @@ router.post("/refresh-token", genAccessTokenFromRefreshToken)
 router.delete('/logout', [authGuard], invalidateUserToken)
 
 // Register New User
-router.post('/register', [authGuard], async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const user = new User(req.body)
     const newPasssword = await bcrypt.hash(user.password, 10)
