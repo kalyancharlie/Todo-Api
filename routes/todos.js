@@ -14,9 +14,10 @@ router.use(validateIdByBody)
 
 // Get all Todos
 router.get("/", async (req, res, next) => {
-  console.log(req.user)
+  console.log("REQ.USER", req.user)
+  console.log('COOKIES', req.cookies)
   try {
-    const { user_id } = req.body;
+    const { user_id } = req.user;
     const todos = await User.findById({ _id: user_id }, "todos").populate('todos')
     res.status(200).json(todos);
   } catch (error) {
@@ -29,9 +30,10 @@ router.get("/", async (req, res, next) => {
 router.post("/add", async (req, res, next) => {
   try {
     const {...todo } = req.body;
+    const { user_id } = req.user
     const newTodo = new Todo(todo)
     await newTodo.save()
-    await User.findByIdAndUpdate({_id: todo.user_id}, {$push: {todos: newTodo._id}})
+    await User.findByIdAndUpdate({_id: user_id}, {$push: {todos: newTodo._id}})
     res.status(201).json(newTodo);
   } catch (error) {
     console.log(error.message);
@@ -55,7 +57,8 @@ router.put("/update", async (req, res, next) => {
 // Delete Todo
 router.delete("/delete", async (req, res, next) => {
   try {
-    const {user_id, _id } = req.body
+    const { _id } = req.body
+    const { user_id } = req.user
     await Todo.findByIdAndDelete(_id)
     await User.updateOne({ _id: user_id}, { $pullAll: { todos: [_id] } })
     res.status(200).json({});

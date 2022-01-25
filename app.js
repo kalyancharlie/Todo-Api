@@ -13,11 +13,19 @@ const todosRouter = require("./routes/todos");
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost/todo_app";
 const LOG_MODE = process.env.LOG_MODE == "development" ? "dev" : "common";
+const ALLOWED_ORIGINS = process.env.LOG_MODE == "development" ? ['*'] : JSON.parse(process.env.ALLOW_ORIGIN)
+
+console.log(ALLOWED_ORIGINS)
+const CORS_OPTS = {
+  origin: ALLOWED_ORIGINS,
+  allowHeaders: 'origin, Content-Type, Accept',
+  methods: "GET,PUT,POST,DELETE"
+}
 
 const app = express();
 
+app.use(cors(CORS_OPTS));
 app.use(logger(LOG_MODE));
-app.use(cors());
 
 // Mongoose Connection
 mongoose

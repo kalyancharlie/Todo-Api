@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = mongoose.model("user");
 const Token = mongoose.model("token");
+require('dotenv').config()
 
 const ISSUER = "TODO-API";
 const SUBJECT = "TODO-APP";
@@ -67,6 +68,13 @@ module.exports = {
       const accessToken = user.generateAccessToken();
       const refreshToken = await user.generateRefreshToken();
 
+      // Set the Cookie
+      res.cookie('_rt', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        expire: Date.now() + (86400 * 15),
+        path: process.env.REFRESH_COOKIE_PATH || '/',
+      })
       // Send the Tokens
       return res
         .status(201)
@@ -103,6 +111,8 @@ module.exports = {
   genAccessTokenFromRefreshToken: async (req, res, next) => {
     try {
       const { REFRESH_TOKEN_SECRET, ACCESS_TOKEN_SECRET } = process.env;
+      console.log('=============')
+      console.log('Cookies', req.cookies)
       const { refreshToken } = req.body;
       if (!refreshToken) {
         return res.status(401).json({
@@ -143,6 +153,7 @@ module.exports = {
     try {
       const {refreshToken} = req.body;
       const { user_id } = req.user;
+      res.clearCookie('_rt')
       await Token.deleteMany({ user_id });
       req.user = null;
       res.status(201).json({ message: "User logged out successfully!" });
