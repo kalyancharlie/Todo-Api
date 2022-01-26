@@ -13,18 +13,28 @@ const todosRouter = require("./routes/todos");
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost/todo_app";
 const LOG_MODE = process.env.LOG_MODE == "development" ? "dev" : "common";
-const ALLOWED_ORIGINS = process.env.LOG_MODE == "development" ? ['*'] : JSON.parse(process.env.ALLOW_ORIGIN)
+const WHITELISTED_ORIGINS =
+  process.env.LOG_MODE == "development"
+    ? ["*"]
+    : JSON.parse(process.env.ALLOW_ORIGIN);
 
-console.log(ALLOWED_ORIGINS)
-const CORS_OPTS = {
-  origin: ALLOWED_ORIGINS,
-  allowHeaders: 'origin, Content-Type, Accept',
-  methods: "GET,PUT,POST,DELETE"
+const corsOptions = {
+  origin: (origin, callback) => {
+    console.log(`CORS: origin: ${origin} | mode: ${process.env.LOG_MODE} | WHITELISTED_ORIGINS: ${WHITELISTED_ORIGINS}`)
+    if (WHITELISTED_ORIGINS.includes('*')) {
+      return callback(null, true)
+    }
+    if(WHITELISTED_ORIGINS.indexOf(origin) === -1) {
+      let msg = `${origin} is not allowed to access API.`
+      return callback(new Error(msg), false)
+    }
+    callback(null, true)
+  },
 }
 
 const app = express();
 
-app.use(cors(CORS_OPTS));
+app.use(cors(corsOptions));
 app.use(logger(LOG_MODE));
 
 // Mongoose Connection
