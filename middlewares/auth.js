@@ -98,14 +98,24 @@ module.exports = {
     } catch (error) {}
   },
   verifyAccessToken: (req, res, next) => {
-    const { ACCESS_TOKEN_SECRET } = process.env;
-    const token = req.headers["x-api-key"];
-    console.log(token, ACCESS_TOKEN_SECRET)
-    const tokenStatus = isTokenValid(token, ACCESS_TOKEN_SECRET)
-    if (tokenStatus) {
-      return res.status(200).json({status: true, message: 'Valid Token'})
+    try {
+      const { ACCESS_TOKEN_SECRET } = process.env;
+      const token = req.headers["x-api-key"];
+      if (!token) {
+        return res.status(400).json({status: false, message: 'Token Must be provided'})
+      }
+      console.log(token, ACCESS_TOKEN_SECRET)
+      const tokenStatus = isTokenValid(token, ACCESS_TOKEN_SECRET)
+      if (tokenStatus) {
+        return res.status(200).json({status: true, message: 'Valid Token'})
+      }
+      return res.status(403).json({status: false, message: 'Token Expired or Invalid'})
+    } catch (error) {
+      console.log('VERIFY ACCESS TOKEN ERRO:')
+      console.log(error)
+      return res.status(500).json({status: false, message: 'Internal Server Error'})
     }
-    return res.status(403).json({status: false, message: 'Token Expired or Invalid'})
+    
   },
   authGuard: (req, res, next) => {
     // Check the Header for token & verify
