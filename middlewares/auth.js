@@ -50,6 +50,22 @@ const validateCredentials = async (email, password) => {
   }
 };
 
+const isTokenValid = (token, SECRET) => {
+  try {
+    jwt.verify(token, SECRET, (err, payload) => {
+      if (err) {
+        console.log(err)
+        return false
+      }
+    })
+    return true
+  } catch (error) {
+    console.log('VALIDATE ACCESS TOKEN')
+    console.log(error)
+    return false
+  }
+}
+
 module.exports = {
   authenticateUser: async (req, res, next) => {
     try {
@@ -61,7 +77,7 @@ module.exports = {
         password
       );
       if (!userAuthStatus.status) {
-        return res.status(userAuthStatus.statusCode).json(userAuthStatus);
+        return res.status(userAuthStatus.statusCode).json({...userAuthStatus, userId: user._id, name: user.name, email: user.email});
       }
 
       // Generate Access Token & Refresh Token
@@ -81,11 +97,21 @@ module.exports = {
         .json({ ...userAuthStatus, accessToken, refreshToken });
     } catch (error) {}
   },
+  verifyAccessToken: (req, res, next) => {
+    const { ACCESS_TOKEN_SECRET } = process.env;
+    const token = req.headers["x-api-key"];
+    console.log(token, ACCESS_TOKEN_SECRET)
+    const tokenStatus = isTokenValid(token, ACCESS_TOKEN_SECRET)
+    if (tokenStatus) {
+      return res.status(200).json({status: true, message: 'Valid Token'})
+    }
+    return res.status(403).json({status: false, message: 'Token Expired or Invalid'})
+  },
   authGuard: (req, res, next) => {
     // Check the Header for token & verify
     const { ACCESS_TOKEN_SECRET } = process.env;
     const token = req.headers["x-api-key"];
-
+    
     console.log("INSIDE AUTH GUARD", token);
     if (!token) {
       // Send 401
@@ -99,7 +125,7 @@ module.exports = {
       console.log("PAYLOAD ----", payload);
       if (err) {
         return res.status(403).json({
-          message: "Token Expired, Login again to access the resource",
+          message: "Token Expired, Refresh the Token or login again to access the resource",
         });
       }
       const { user } = payload;
@@ -124,12 +150,14 @@ module.exports = {
       const token = await Token.findOne({ token: refreshToken });
       if (!token) {
         return res.status(401).json({
+          status: false,
           message: "Token Expired Login again to access the resource",
         });
       }
       jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, payload) => {
         if (err)
           return res.status(401).json({
+            status: false,
             message: "Invalid Token, Please login again to access the resource",
           });
         const { user } = payload;

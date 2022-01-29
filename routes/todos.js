@@ -13,7 +13,7 @@ router.use(authGuard)
 router.use(validateIdByBody)
 
 // Get all Todos
-router.get("/", async (req, res, next) => {
+router.get("/all", async (req, res, next) => {
   console.log("REQ.USER", req.user)
   console.log('COOKIES', req.cookies)
   try {
@@ -42,7 +42,7 @@ router.post("/add", async (req, res, next) => {
 });
 
 // Update Todo
-router.put("/update", async (req, res, next) => {
+router.patch("/update", async (req, res, next) => {
   try {
     const {...todo } = req.body;
     const newTodo = new Todo(todo)
