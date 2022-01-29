@@ -55,7 +55,7 @@ const isTokenValid = (token, SECRET) => {
     jwt.verify(token, SECRET, (err, payload) => {
       if (err) {
         console.log(err)
-        return false
+        throw err
       }
     })
     return true
