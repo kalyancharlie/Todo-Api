@@ -50,15 +50,11 @@ const validateCredentials = async (email, password) => {
   }
 };
 
-const isTokenValid = (token, SECRET) => {
+const isTokenValid = async (token, SECRET) => {
   try {
-    jwt.verify(token, SECRET, (err, payload) => {
-      if (err) {
-        console.log(err)
-        throw err
-      }
+    return jwt.verify(token, SECRET, (err, payload) => {
+      return err ? false : true
     })
-    return true
   } catch (error) {
     console.log('VALIDATE ACCESS TOKEN')
     console.log(error)
@@ -97,15 +93,15 @@ module.exports = {
         .json({ ...userAuthStatus, accessToken, refreshToken });
     } catch (error) {}
   },
-  verifyAccessToken: (req, res, next) => {
+  verifyAccessToken: async (req, res, next) => {
     try {
       const { ACCESS_TOKEN_SECRET } = process.env;
       const token = req.headers["x-api-key"];
       if (!token) {
         return res.status(400).json({status: false, message: 'Token Must be provided'})
       }
-      console.log(token, ACCESS_TOKEN_SECRET)
-      const tokenStatus = isTokenValid(token, ACCESS_TOKEN_SECRET)
+      // console.log(token, ACCESS_TOKEN_SECRET)
+      const tokenStatus = await isTokenValid(token, ACCESS_TOKEN_SECRET)
       if (tokenStatus) {
         return res.status(200).json({status: true, message: 'Valid Token'})
       }
