@@ -35,23 +35,22 @@ router.post("/register", async (req, res) => {
     if (existingUser) {
       return res
         .status(400)
-        .json({ message: "Email Id is already registered" });
+        .json({status: false, message: "Email Id is already registered" });
     }
     const createdUser = await user.save();
     if (!createdUser) {
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ status: false, message: "Internal Server Error" });
     }
     res
       .status(201)
       .json({
-        user_id: createdUser._id,
         name: createdUser.name,
         status: true,
         message: "User Created",
       });
   } catch (error) {
     console.log(error.message);
-    res.status(400).json({ error });
+    res.status(400).json({ error, status: false });
   }
 });
 

@@ -73,7 +73,7 @@ module.exports = {
         password
       );
       if (!userAuthStatus.status) {
-        return res.status(userAuthStatus.statusCode).json({...userAuthStatus, userId: user._id, name: user.name, email: user.email});
+        return res.status(userAuthStatus.statusCode).json({...userAuthStatus, userId: user?._id, name: user?.name, email: user?.email});
       }
 
       // Generate Access Token & Refresh Token
@@ -90,8 +90,12 @@ module.exports = {
       // Send the Tokens
       return res
         .status(201)
-        .json({ ...userAuthStatus, accessToken, refreshToken });
-    } catch (error) {}
+        .json({ ...userAuthStatus, accessToken, refreshToken, userId: user?._id, name: user?.name, email: user?.email });
+    } catch (error) {
+      console.log('auth error')
+      console.log(error)
+      res.status(500).json({})
+    }
   },
   verifyAccessToken: async (req, res, next) => {
     try {
@@ -145,7 +149,7 @@ module.exports = {
       const { REFRESH_TOKEN_SECRET, ACCESS_TOKEN_SECRET } = process.env;
       console.log('=============')
       console.log('Cookies', req.cookies)
-      const { refreshToken } = req.body;
+      const refreshToken = req.cookies._rt
       if (!refreshToken) {
         return res.status(401).json({
           message: "Token Expired Login again to access the resource",
@@ -171,7 +175,7 @@ module.exports = {
         const accessToken = jwt.sign({ user }, ACCESS_TOKEN_SECRET, {
           subject: SUBJECT,
           issuer: ISSUER,
-          expiresIn: "15m",
+          expiresIn: "50s",
         });
         res.status(201).json({
           accessToken: accessToken,
@@ -190,9 +194,9 @@ module.exports = {
       res.clearCookie('_rt')
       await Token.deleteMany({ user_id });
       req.user = null;
-      res.status(201).json({ message: "User logged out successfully!" });
+      res.status(201).json({ status: true, message: "User logged out successfully!" });
     } catch (error) {
-      res.status(500).json({ message: "Internal Server Error", error });
+      res.status(500).json({ status: false, message: "Internal Server Error", error });
     }
   },
 };

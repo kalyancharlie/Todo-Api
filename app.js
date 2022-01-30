@@ -30,7 +30,8 @@ const corsOptions = {
     }
     callback(null, true)
   },
-  allowedHeaders: ['Content-Type', 'x-api-key']
+  allowedHeaders: ['Content-Type', 'x-api-key'],
+  credentials: true
 }
 
 const app = express();
