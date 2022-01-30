@@ -86,6 +86,7 @@ module.exports = {
         secure: true,
         expire: Date.now() + (86400 * 15),
         path: process.env.REFRESH_COOKIE_PATH || '/',
+        sameSite: 'None'
       })
       // Send the Tokens
       return res
@@ -176,7 +177,6 @@ module.exports = {
           subject: SUBJECT,
           issuer: ISSUER,
           expiresIn: "50s",
-          sameSite: 'None'
         });
         res.status(201).json({
           accessToken: accessToken,
