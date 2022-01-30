@@ -176,6 +176,7 @@ module.exports = {
           subject: SUBJECT,
           issuer: ISSUER,
           expiresIn: "50s",
+          sameSite: 'None'
         });
         res.status(201).json({
           accessToken: accessToken,
