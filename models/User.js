@@ -43,8 +43,10 @@ UserSchema.methods = {
       const accessToken = jwt.sign({ user }, ACCESS_TOKEN_SECRET, {
         subject: SUBJECT,
         issuer: ISSUER,
-        expiresIn: "50s",
+        expiresIn: "20s",
       });
+      console.log("Access Token Given ====")
+      console.log(accessToken)
       return accessToken;
     } catch (error) {
       return null;
@@ -65,6 +67,8 @@ UserSchema.methods = {
         console.log("GENERATE REFRESH TOKEN - main", refreshToken);
         return null;
       }
+      console.log("Refresh Token Given ====")
+      console.log(refreshToken)
       return refreshToken;
     } catch (error) {
       console.log("GENERATE REFRESH TOKEN ERROR", error);

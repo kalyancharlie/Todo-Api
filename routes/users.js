@@ -22,7 +22,7 @@ router.post("/verify-token", verifyAccessToken);
 router.post("/refresh-token", genAccessTokenFromRefreshToken);
 
 // Logout User
-router.delete("/logout", [authGuard], invalidateUserToken);
+router.delete("/logout", invalidateUserToken);
 
 // Register New User
 router.post("/register", async (req, res) => {

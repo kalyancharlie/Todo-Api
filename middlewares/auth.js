@@ -72,6 +72,8 @@ module.exports = {
         email,
         password
       );
+      console.log('AUTH CREDENTIAL STATUS')
+      console.log(user, userAuthStatus)
       if (!userAuthStatus.status) {
         return res.status(userAuthStatus.statusCode).json({...userAuthStatus, userId: user?._id, name: user?.name, email: user?.email});
       }
@@ -88,6 +90,13 @@ module.exports = {
         path: process.env.REFRESH_COOKIE_PATH || '/',
         sameSite: 'None'
       })
+      res.cookie('_uid', user._id, {
+        httpOnly: true,
+        secure: true,
+        expire: Date.now() + (86400 * 15),
+        path: '/users/logout' || '/',
+        sameSite: 'None'
+      })
       // Send the Tokens
       return res
         .status(201)
@@ -102,10 +111,11 @@ module.exports = {
     try {
       const { ACCESS_TOKEN_SECRET } = process.env;
       const token = req.headers["x-api-key"];
+      console.log("X-API-KEY")
+      console.log(token)
       if (!token) {
         return res.status(400).json({status: false, message: 'Token Must be provided'})
       }
-      // console.log(token, ACCESS_TOKEN_SECRET)
       const tokenStatus = await isTokenValid(token, ACCESS_TOKEN_SECRET)
       if (tokenStatus) {
         return res.status(200).json({status: true, message: 'Valid Token'})
@@ -133,23 +143,27 @@ module.exports = {
         });
     }
     jwt.verify(token, ACCESS_TOKEN_SECRET, (err, payload) => {
-      console.log("PAYLOAD ----", payload);
+      console.log("PAYLOAD");
+      console.log(payload)
       if (err) {
         return res.status(403).json({
           message: "Token Expired, Refresh the Token or login again to access the resource",
         });
       }
       const { user } = payload;
+      console.log('NEW USER SET')
+      console.log(user)
       req.user = user;
-      next();
+      console.log("Auth Guard Passed")
+      return next();
       // set user - req.user = payload.user
     });
   },
   genAccessTokenFromRefreshToken: async (req, res, next) => {
     try {
       const { REFRESH_TOKEN_SECRET, ACCESS_TOKEN_SECRET } = process.env;
-      console.log('=============')
-      console.log('Cookies', req.cookies)
+      console.log('Cookies')
+      console.log(req.cookies)
       const refreshToken = req.cookies._rt
       if (!refreshToken) {
         return res.status(401).json({
@@ -166,18 +180,23 @@ module.exports = {
         });
       }
       jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, payload) => {
-        if (err)
+        if (err) {
+        console.log('ACCESS TOKEN ERROR')
+        console.log(err)
           return res.status(401).json({
             status: false,
             message: "Invalid Token, Please login again to access the resource",
           });
+        }
         const { user } = payload;
         req.user = user;
         const accessToken = jwt.sign({ user }, ACCESS_TOKEN_SECRET, {
           subject: SUBJECT,
           issuer: ISSUER,
-          expiresIn: "50s",
+          expiresIn: "20s",
         });
+        console.log('TOKEN RENEWED')
+        console.log(accessToken,)
         res.status(201).json({
           accessToken: accessToken,
           status: true,
@@ -190,14 +209,16 @@ module.exports = {
   },
   invalidateUserToken: async (req, res, next) => {
     try {
-      const {refreshToken} = req.body;
-      const { user_id } = req.user;
-      res.clearCookie('_rt')
+      const user_id = req.cookies['_uid']
+      console.log('userid from token', user_id)
+      res.clearCookie('_rt', {path: '/users/refresh-token'})
+      res.clearCookie('_uid', {path: '/users/logout'})
       await Token.deleteMany({ user_id });
-      req.user = null;
       res.status(201).json({ status: true, message: "User logged out successfully!" });
     } catch (error) {
-      res.status(500).json({ status: false, message: "Internal Server Error", error });
+      console.log('Invalidation Error')
+      console.log(error?.message)
+      res.status(500).json({ status: false, message: "Internal Server Error", ...error });
     }
   },
 };
