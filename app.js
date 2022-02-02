@@ -30,7 +30,7 @@ const corsOptions = {
     }
     callback(null, true)
   },
-  allowedHeaders: ['Content-Type', 'x-api-key'],
+  allowedHeaders: ['Content-Type', 'x-api-key', 'Access-Control-Max-Age'],
   credentials: true
 }
 
